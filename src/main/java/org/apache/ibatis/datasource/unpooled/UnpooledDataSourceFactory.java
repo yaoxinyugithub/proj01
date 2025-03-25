@@ -29,6 +29,7 @@ import java.util.Properties;
 public class UnpooledDataSourceFactory implements DataSourceFactory {
 
   private static final String DRIVER_PROPERTY_PREFIX = "driver.";
+  //长度7
   private static final int DRIVER_PROPERTY_PREFIX_LENGTH = DRIVER_PROPERTY_PREFIX.length();
 
   protected DataSource dataSource;

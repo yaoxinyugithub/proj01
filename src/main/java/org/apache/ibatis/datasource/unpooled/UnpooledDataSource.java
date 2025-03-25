@@ -15,24 +15,18 @@
  */
 package org.apache.ibatis.datasource.unpooled;
 
+import org.apache.ibatis.io.Resources;
+
+import javax.sql.DataSource;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
-import java.sql.SQLException;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
+import java.sql.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import javax.sql.DataSource;
-
-import org.apache.ibatis.io.Resources;
-
 /**
+ * 数据源：获取数据库连接
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -55,6 +49,7 @@ public class UnpooledDataSource implements DataSource {
     Enumeration<Driver> drivers = DriverManager.getDrivers();
     while (drivers.hasMoreElements()) {
       Driver driver = drivers.nextElement();
+      //环境中的driver注册，k:完整类名，v:驱动对象
       registeredDrivers.put(driver.getClass().getName(), driver);
     }
   }
@@ -221,11 +216,16 @@ public class UnpooledDataSource implements DataSource {
 
   private Connection doGetConnection(Properties properties) throws SQLException {
     initializeDriver();
+    //创建数据库链接
     Connection connection = DriverManager.getConnection(url, properties);
     configureConnection(connection);
     return connection;
   }
 
+  /**
+   * 初始化驱动：map里不包含这个驱动类，反射创建驱动对象
+   * @throws SQLException
+   */
   private synchronized void initializeDriver() throws SQLException {
     if (!registeredDrivers.containsKey(driver)) {
       Class<?> driverType;
@@ -238,7 +238,9 @@ public class UnpooledDataSource implements DataSource {
         // DriverManager requires the driver to be loaded via the system ClassLoader.
         // http://www.kfu.com/~nsayer/Java/dyn-jdbc.html
         Driver driverInstance = (Driver) driverType.getDeclaredConstructor().newInstance();
+        //注册驱动
         DriverManager.registerDriver(new DriverProxy(driverInstance));
+        //放入驱动map中
         registeredDrivers.put(driver, driverInstance);
       } catch (Exception e) {
         throw new SQLException("Error setting driver on UnpooledDataSource. Cause: " + e);
