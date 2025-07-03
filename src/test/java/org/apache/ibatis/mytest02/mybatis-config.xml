@@ -18,8 +18,9 @@
         </environment>
     </environments>
 
+<!--    引入映射文件-->
     <mappers>
-        <mapper resource="org/apache/ibatis/mytest01/UserMapper.xml"/>
+        <mapper resource="org/apache/ibatis/mytest02/UserMapper.xml"/>
     </mappers>
 
 </configuration>
